@@ -11,10 +11,7 @@ class StrategyResolver(StrategyCoreResolver):
         Track balances for all strategy implementations
         (Strategy Must Implement)
         """
-        strategy = self.manager.strategy
         return {
-            "gauge": strategy.gauge(),
-            "badgerTree": strategy.badgerTree(),
         }
 
     def hook_after_confirm_withdraw(self, before, after, params):
@@ -23,7 +20,7 @@ class StrategyResolver(StrategyCoreResolver):
         Use this to verify that balances in the get_strategy_destinations are properly set
         """
         ## Check that balance in gauge goes down
-        before.balances("want", "gauge") > after.balances("want", "gauge")
+        before.balances("want", "strategy") > after.balances("want", "strategy")
 
     def hook_after_confirm_deposit(self, before, after, params):
         """
@@ -31,7 +28,7 @@ class StrategyResolver(StrategyCoreResolver):
         Use this to verify that balances in the get_strategy_destinations are properly set
         """
         ## Check that balance in gauge goes up
-        after.balances("want", "gauge") > before.balances("want", "gauge")
+        after.balances("want", "strategy") > before.balances("want", "strategy")
 
     def hook_after_earn(self, before, after, params):
         """
@@ -39,7 +36,7 @@ class StrategyResolver(StrategyCoreResolver):
         Use this to verify that balances in the get_strategy_destinations are properly set
         """
         ## Check that balance in gauge goes up
-        after.balances("want", "gauge") > before.balances("want", "gauge")
+        after.balances("want", "strategy") > before.balances("want", "strategy")
 
     def confirm_harvest(self, before, after, tx):
         """
@@ -49,24 +46,11 @@ class StrategyResolver(StrategyCoreResolver):
         self.manager.printCompare(before, after)
         self.confirm_harvest_state(before, after, tx)
 
-        valueGained = after.get("sett.pricePerFullShare") > before.get(
+        valueGained = after.get("sett.pricePerFullShare") == before.get(
             "sett.pricePerFullShare"
         )
 
-        # Strategist should earn if fee is enabled and value was generated
-        if before.get("strategy.performanceFeeStrategist") > 0 and valueGained:
-            assert after.balances("want", "strategist") > before.balances(
-                "want", "strategist"
-            )
-
-        # Strategist should earn if fee is enabled and value was generated
-        if before.get("strategy.performanceFeeGovernance") > 0 and valueGained:
-            assert after.balances("want", "governanceRewards") > before.balances(
-                "want", "governanceRewards"
-            )
-
-        ## Check that balance in tree goes up
-        after.balances("reward", "badgerTree") > before.balances("reward", "badgerTree")
+        # assert valueGained ## NO value gained
 
     def confirm_tend(self, before, after, tx):
         """
@@ -78,25 +62,13 @@ class StrategyResolver(StrategyCoreResolver):
         """
         console.print("=== Compare Tend ===")
         self.manager.printCompare(before, after)
-        # Tend only produces results if balance of want in strategy is > 0
-        if before.get("strategy.balanceOfWant") > 0:
-            # Check that balance of want on strategy goes to 0 after tend
-            assert after.get("strategy.balanceOfWant") == 0
 
-            # Amount deposited in pool must have increased
-            assert after.get("strategy.balanceOfPool") > before.get(
-                "strategy.balanceOfPool"
-            )
 
-    def add_balances_snap(self, calls, entities):
-        """
-            Add tracking for reward
-        """
-        super().add_balances_snap(calls, entities)
-        strategy = self.manager.strategy
+        # # assert after.get("strategy.balanceOfWant") == before.get(
+        #         "strategy.balanceOfWant"
+        # )
 
-        reward = interface.IERC20(strategy.reward())
-
-        calls = self.add_entity_balances_for_tokens(calls, "reward", reward, entities)
-
-        return calls
+        # # assert after.get("strategy.balanceOfPool") == before.get(
+        #         "strategy.balanceOfPool"
+        # )
+            

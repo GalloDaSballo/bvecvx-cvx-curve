@@ -72,13 +72,17 @@ def deployed():
 
     ## Set up tokens
     want = interface.IERC20(WANT)
-    
-    whale = accounts.at("0x86cbD0ce0c087b482782c181dA8d191De18C8275", force=True)
-
-    want.transfer(deployer, want.balanceOf(whale), {"from": whale})
-
     lpComponent = interface.IERC20(LP_COMPONENT)
     rewardToken = interface.IERC20(REWARD_TOKEN)
+    
+    whale = accounts.at("0xb65cef03b9b89f99517643226d76e286ee999e77", force=True)
+    want.transfer(deployer, want.balanceOf(whale), {"from": whale})
+
+
+    ## Wire up Controller to Strart
+    ## In testing will pass, but on live it will fail
+    controller.approveStrategy(WANT, strategy, {"from": governance})
+    controller.setStrategy(WANT, strategy, {"from": deployer})
 
     return DotMap(
         deployer=deployer,
@@ -150,3 +154,8 @@ def settKeeper(vault):
 @pytest.fixture
 def strategyKeeper(strategy):
     return accounts.at(strategy.keeper(), force=True)
+
+## Forces reset before each test
+@pytest.fixture(autouse=True)
+def isolation(fn_isolation):
+    pass

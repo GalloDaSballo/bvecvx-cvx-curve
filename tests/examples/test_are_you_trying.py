@@ -31,10 +31,13 @@ def test_are_you_trying(deployer, sett, strategy, want):
     assert want.balanceOf(sett) == depositAmount - available
 
     # Use this if it should invest all
-    assert want.balanceOf(strategy) == 0
+    # assert want.balanceOf(strategy) == 0
+    
+    # Use this if it does nothing
+    assert want.balanceOf(strategy) == available
 
-    ## TEST 2: Is the Harvest profitable?
-    harvest = strategy.harvest({"from": deployer})
-    event = harvest.events["Harvest"]
-    # If it doesn't print, we don't want it
-    assert event["harvested"] > 0
+    # ## TEST 2: Is the Harvest profitable?
+    # harvest = strategy.harvest({"from": deployer})
+    # event = harvest.events["Harvest"]
+    # # If it doesn't print, we don't want it
+    # assert event["harvested"] > 0
