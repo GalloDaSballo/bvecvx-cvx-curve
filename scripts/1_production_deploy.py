@@ -3,7 +3,7 @@ import time
 from brownie import (
     accounts,
     network,
-    MyStrategy,
+    BrikedStrategy,
     SettV3,
     AdminUpgradeabilityProxy,
     Controller,
@@ -166,7 +166,7 @@ def deploy_strategy(
 
     print("Strategy Arguments: ", args)
 
-    strat_logic = MyStrategy.deploy({"from": dev})
+    strat_logic = BrikedStrategy.deploy({"from": dev})
     time.sleep(sleep_between_tx)
 
     strat_proxy = AdminUpgradeabilityProxy.deploy(
@@ -179,7 +179,7 @@ def deploy_strategy(
 
     ## We delete from deploy and then fetch again so we can interact
     AdminUpgradeabilityProxy.remove(strat_proxy)
-    strat_proxy = MyStrategy.at(strat_proxy.address)
+    strat_proxy = BrikedStrategy.at(strat_proxy.address)
 
     console.print("[green]Strategy was deployed at: [/green]", strat_proxy.address)
 

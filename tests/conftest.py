@@ -3,7 +3,7 @@ from brownie import (
     interface,
     Controller,
     SettV3,
-    MyStrategy,
+    BrikedStrategy,
     ERC20Upgradeable
 )
 from config import (
@@ -57,7 +57,7 @@ def deployed():
     # sett.setGuestList(guestList, {"from": governance})
 
     ## Start up Strategy
-    strategy = MyStrategy.deploy({"from": deployer})
+    strategy = BrikedStrategy.deploy({"from": deployer})
     strategy.initialize(
         BADGER_DEV_MULTISIG,
         strategist,
@@ -72,33 +72,13 @@ def deployed():
 
     ## Set up tokens
     want = interface.IERC20(WANT)
+    
+    whale = accounts.at("0x86cbD0ce0c087b482782c181dA8d191De18C8275", force=True)
+
+    want.transfer(deployer, want.balanceOf(whale), {"from": whale})
+
     lpComponent = interface.IERC20(LP_COMPONENT)
     rewardToken = interface.IERC20(REWARD_TOKEN)
-
-    ## Wire up Controller to Strart
-    ## In testing will pass, but on live it will fail
-    controller.approveStrategy(WANT, strategy, {"from": governance})
-    controller.setStrategy(WANT, strategy, {"from": deployer})
-
-    WETH = strategy.WETH()
-    WBTC = strategy.WBTC()
-
-    ## Uniswap some tokens here
-    router = interface.IUniswapRouterV2(strategy.SWAPR_ROUTER())
-    router.swapExactETHForTokens(
-        0,  ## Min out
-        [WETH, WBTC],
-        deployer,
-        9999999999999999,
-        {"from": deployer, "value": 5000000000000000000},
-    )
-    
-    WBTC_TOKEN = ERC20Upgradeable.at(WBTC)
-    toDeposit = WBTC_TOKEN.balanceOf(deployer)
-    WBTC_TOKEN.approve(strategy.CURVE_POOL(), toDeposit, {"from": deployer})
-    ## Doing this gives us want
-    pool = interface.ICurveStableSwapREN(strategy.CURVE_POOL())
-    pool.add_liquidity([toDeposit, 0], 0, {"from": deployer})
 
     return DotMap(
         deployer=deployer,
