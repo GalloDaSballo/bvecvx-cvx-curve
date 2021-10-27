@@ -39,15 +39,15 @@ def main():
 
     # Strategies to wire up
     strategies = [
-        "0x1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+        "0x98Ca7AFa876f0e15494E76E92C5b3658cdE1Ffe1",
     ]
     # Vaults to wire up
     vaults = [
-        "0x1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+        "0x937B8E917d0F36eDEBBA8E459C5FB16F3b315551",
     ]
     # Wants related to strategies and vaults
     wants = [
-        "0x1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a",
+        "0x04c90C198b2eFF55716079bc06d7CCc4aa4d7512",
     ]
 
     # Get production controller from registry
